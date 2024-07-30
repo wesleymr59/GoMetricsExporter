@@ -1,5 +1,15 @@
 package main
 
+import (
+	controllers "GoMetricsExporter/app/controllers/healthy"
+	"crypto/tls"
+	"log"
+	"net/http"
+)
+
 func main() {
-	println("teste app")
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
+	log.Println("[CONSUMER] Starting Consumer MetricsExporter...")
+	controllers.Run()
 }
