@@ -1,27 +1,32 @@
 package controllers
 
 import (
-	usecases "GoMetricsExporter/app/usecases/healthy"
-	"GoMetricsExporter/infrastructure"
-	"GoMetricsExporter/infrastructure/database/healthy"
 	"log"
 	"time"
+
+	usecases "GoMetricsExporter/app/usecases"
+	"GoMetricsExporter/infrastructure"
+	"GoMetricsExporter/infrastructure/database/healthy"
+	"GoMetricsExporter/infrastructure/database/mysql/repositories"
 )
 
 var (
-	healthy_repo = healthy.HealthyRepository{}
-	env          = infrastructure.GetEnvironmentVariables()
+	controlGateway = repositories.ControlRepository{} // Certifique-se de que ControlRepository implementa ControlGateway
+	healthyRepo    = healthy.HealthyRepository{}
+	env            = infrastructure.GetEnvironmentVariables()
 )
 
 func Run() {
-	var err error
+	// Inicializa o ControlUseCase com o ControlGateway
+	err := usecases.ControlUseCase(controlGateway)
+	if err != nil {
+		log.Fatalf("[CONTROLLER] Error initializing use case: %v\n", err.Error())
+	}
+
+	// Inicia um loop para manter o serviço ativo
 	for {
-		err = usecases.HealthyCheckUseCase(healthy_repo)
-
-		if err != nil {
-			log.Printf("[CONSUMER] Error: %v\n", err.Error())
-		}
-
+		// Use o método HealthyCheck do ControlUseCase em um intervalo definido
+		// Aqui você pode adicionar outras chamadas ou funcionalidades, se necessário
 		time.Sleep(time.Second * time.Duration(env.ENV_TIME_KEEPALIVE_SECONDS))
 	}
 }
